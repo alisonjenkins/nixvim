@@ -131,6 +131,7 @@
     ./utils/harpoon.nix
     ./utils/illuminate.nix
     ./utils/indent-blankline.nix
+    ./utils/indent-o-matic
     ./utils/instant.nix
     ./utils/intellitab.nix
     ./utils/lastplace.nix
