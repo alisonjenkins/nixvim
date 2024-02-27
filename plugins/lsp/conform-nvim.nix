@@ -13,12 +13,12 @@ in {
     // {
       enable = mkEnableOption "conform-nvim";
 
-      package = helpers.mkPackageOption "conform-nvim" pkgs.vimPlugins.conform-nvim;
+      package =
+        helpers.mkPackageOption "conform-nvim" pkgs.vimPlugins.conform-nvim;
 
       formattersByFt =
         helpers.defaultNullOpts.mkNullable (types.attrsOf types.anything)
-        "see documentation"
-        ''
+        "see documentation" ''
           ```nix
             # Map of filetype to formatters
             formattersByFt =
@@ -37,36 +37,26 @@ in {
           ```
         '';
 
-      formatOnSave =
-        helpers.defaultNullOpts.mkNullable
-        (
-          with types;
-            either
-            str
-            (
-              submodule {
-                options = {
-                  lspFallback = mkOption {
-                    type = types.bool;
-                    default = true;
-                    description = "See :help conform.format for details.";
-                  };
-                  timeoutMs = mkOption {
-                    type = types.int;
-                    default = 500;
-                    description = "See :help conform.format for details.";
-                  };
-                };
-              }
-            )
-        )
-        "see documentation"
-        ''
-          If this is set, Conform will run the formatter on save.
-          It will pass the table to conform.format().
-          This can also be a function that returns the table.
-          See :help conform.format for details.
-        '';
+      formatOnSave = helpers.defaultNullOpts.mkNullable (with types;
+        either str (submodule {
+          options = {
+            lspFallback = mkOption {
+              type = types.bool;
+              default = true;
+              description = "See :help conform.format for details.";
+            };
+            timeoutMs = mkOption {
+              type = types.int;
+              default = 500;
+              description = "See :help conform.format for details.";
+            };
+          };
+        })) "see documentation" ''
+        If this is set, Conform will run the formatter on save.
+        It will pass the table to conform.format().
+        This can also be a function that returns the table.
+        See :help conform.format for details.
+      '';
 
       formatAfterSave =
         helpers.defaultNullOpts.mkNullable (types.submodule {
@@ -77,9 +67,7 @@ in {
               description = "See :help conform.format for details.";
             };
           };
-        })
-        "see documentation"
-        ''
+        }) "see documentation" ''
           If this is set, Conform will run the formatter asynchronously after save.
           It will pass the table to conform.format().
           This can also be a function that returns the table.
@@ -116,11 +104,18 @@ in {
         log_level = logLevel;
         notify_on_error = notifyOnError;
         inherit formatters;
+
+        formatter_packages = with pkgs; {inherit isort;};
+
+        formatterPackages =
+          mapAttrs (fileType: formatters.${fileType}) formatters;
       }
       // cfg.extraOptions;
   in
     mkIf cfg.enable {
       extraPlugins = [cfg.package];
+
+      extraPackages = [];
 
       extraConfigLua = ''
         require("conform").setup(${helpers.toLuaObject setupOptions})
