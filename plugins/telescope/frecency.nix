@@ -13,6 +13,11 @@ in {
 
     package = helpers.mkPackageOption "telescope extension frecency" pkgs.vimPlugins.telescope-frecency-nvim;
 
+    dbSafeMode = mkOption {
+      type = types.nullOr types.bool;
+      description = "When this is enabled, the user will be prompted before any entries are removed from the database.";
+      default = true;
+    };
     dbRoot = mkOption {
       type = types.nullOr types.str;
       description = "Path to parent directory of custom database location. Defaults to $XDG_DATA_HOME/nvim";
